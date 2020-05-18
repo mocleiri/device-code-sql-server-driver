@@ -42,3 +42,11 @@ Change connection type to **URL Only**.  This code doesn't use the url in any wa
 ## Device Code Flow Settings
 
 ![](images/intellij-data-source-advanced.png)
+
+# Example Login Flow
+
+[Example Login Flow Video](example-login-flow.mp4)
+
+I'm not an SQL Server expert and so my test user doesn't have the correct rights in SQL server
+But you can see from the video how it works and that you are able to connect as the user
+to the database.
