@@ -3,10 +3,10 @@
 
 # Architecture
 
-The current SQL Server drivers support an authentication mode where they are passed an oauth token instead of a 
-username/password.
+The current SQL Server drivers support an authentication mode where they can be passed an oauth token instead of a 
+username/password to authenticate a user.
 
-But the aquisition of such tokens is left to the appliation developer.  This project provides the necessary code to 
+But the acquisition of such tokens is left to the application developer.  This project provides the necessary code to 
 enable token acquistion and allow the database to be logged into even with users that have Multifactor 
 authentication (MFA) enabled.
 
