@@ -45,7 +45,7 @@ Change connection type to **URL Only**.  This code doesn't use the url in any wa
 
 # Example Login Flow
 
-[Example Login Flow Video](images/example-login-flow.mp4)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/zwT9GFyvsy8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 I'm not an SQL Server expert and so my test user doesn't have the correct rights in SQL server
 But you can see from the video how it works and that you are able to connect as the user
