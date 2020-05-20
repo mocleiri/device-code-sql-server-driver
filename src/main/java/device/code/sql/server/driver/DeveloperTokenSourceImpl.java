@@ -79,7 +79,10 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
 
                     pw.close();
 
-                    Process p = Runtime.getRuntime().exec("\""+pathToChrome+"\" --app file:///" + landingPage.getAbsolutePath());
+                    String command = "\""+pathToChrome+"\" --app file:///" + landingPage.getAbsolutePath();
+
+                    log.info("chrome command = '"+command+"'");
+                    Process p = Runtime.getRuntime().exec(command);
 
                 } catch (FileNotFoundException e) {
                     log.error("file not found", e);
@@ -96,13 +99,13 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
 
             future.handle((res, ex) -> {
                 if (ex != null) {
-                    System.out.println("message - " + ex.getMessage());
+                    log.info("message - " + ex.getMessage());
                     return "Unknown!";
                 }
 
-                printJWTToken("Access Token", res.accessToken());
+                log.info(printJWTToken("Access Token", res.accessToken()));
 
-                printJWTToken("ID Token", res.idToken());
+                log.info(printJWTToken("ID Token", res.idToken()));
 
                 return res;
             });
@@ -115,9 +118,11 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
         }
     }
 
-    private void printJWTToken(String header, String jwt) {
+    private String printJWTToken(String header, String jwt) {
 
-        System.out.println(header + " - " + jwt);
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(header + " - " + jwt);
 
         if (jwt != null) {
 
@@ -132,12 +137,14 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
             try {
                 JsonNode tree = mapper.readTree(decodedString);
 
-                System.out.println(header + " = " + tree.asText());
+                sb.append(header + " = " + tree.asText());
+                sb.append("\n");
 
             } catch (JsonProcessingException e) {
-
+                log.error("json processing exception", e);
             }
 
         }
+        return sb.toString();
     }
 }

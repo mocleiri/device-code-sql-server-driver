@@ -16,11 +16,16 @@ IN THE SOFTWARE.
  */
 package device.code.sql.server.driver;
 
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 public class DeviceCodeDriver implements Driver {
+
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(DeviceCodeDriver.class);
 
     /*
      We make the data static because we only want to require the user to login once.  If the token expires they
@@ -33,32 +38,51 @@ public class DeviceCodeDriver implements Driver {
 
     private static TokenSource tokenSource = null;
 
+    static {
+        System.setProperty("org.slf4j.simpleLogger.logFile", new File(System.getProperty("user.home"), "device-code-sql-server-driver.log").getAbsolutePath());
+    }
+
+    private String validateInput(String key, Properties info) {
+
+        String value = info.getProperty(key, "missing " + key);
+
+        String trimmedValue = value.trim();
+
+        log.info("'" + key + "' = '" + trimmedValue  + "'");
+
+        return trimmedValue;
+
+    }
     @Override
     public synchronized Connection connect(String url, Properties info) throws SQLException {
 
         if (tokenSource == null) {
 
-            String tenantId = info.getProperty("tenantId");
-            String clientId = info.getProperty("clientId");
-            String clientSecret = info.getProperty("clientSecret");
+            String tenantId = validateInput("tenantId", info);
+            String clientId = validateInput("clientId", info);
+            String clientSecret = validateInput("clientSecret", info);
 
             if (clientSecret == null) {
                 // login as developer
-                tokenSource = new DeveloperTokenSourceImpl(tenantId, clientId, info.getProperty("pathToChrome"));
+                String pathToChrome = validateInput("pathToChrome", info);
+
+                log.info("login as developer: tenantId={}, clientId={}, pathToChrome={}.", tenantId, clientId, pathToChrome);
+                tokenSource = new DeveloperTokenSourceImpl(tenantId, clientId, pathToChrome);
             }
             else {
                 // login as app registration service principal
+                log.info("login as service principal: tenandId={}, clientId={}, clientSecret={}.");
                 tokenSource = new TokenSourceImpl(tenantId, clientId, clientSecret);
             }
 
             sqlServerDataSource = new TokenRefreshingSQLServerConnectionPoolDataSource(tokenSource);
 
-            sqlServerDataSource.setServerName(info.getProperty("server"));
-            sqlServerDataSource.setDatabaseName(info.getProperty("database"));
+            sqlServerDataSource.setServerName(validateInput("server", info));
+            sqlServerDataSource.setDatabaseName(validateInput("database", info));
 
             sqlServerDataSource.setEncrypt(true);
-            sqlServerDataSource.setTrustServerCertificate(false);
-            sqlServerDataSource.setHostNameInCertificate(info.getProperty("hostnameInCertificate"));
+            sqlServerDataSource.setTrustServerCertificate(true);
+            sqlServerDataSource.setHostNameInCertificate(validateInput("hostnameInCertificate", info));
         }
 
         return sqlServerDataSource.getConnection();
