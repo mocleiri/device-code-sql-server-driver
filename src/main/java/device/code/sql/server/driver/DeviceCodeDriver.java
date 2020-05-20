@@ -38,10 +38,6 @@ public class DeviceCodeDriver implements Driver {
 
     private static TokenSource tokenSource = null;
 
-    static {
-        System.setProperty("org.slf4j.simpleLogger.logFile", new File(System.getProperty("user.home"), "device-code-sql-server-driver.log").getAbsolutePath());
-    }
-
     private String validateInput(String key, Properties info) {
 
         String value = info.getProperty(key, "missing " + key);
@@ -71,7 +67,7 @@ public class DeviceCodeDriver implements Driver {
             }
             else {
                 // login as app registration service principal
-                log.info("login as service principal: tenandId={}, clientId={}, clientSecret={}.");
+                log.info("login as service principal: tenandId={}, clientId={}, clientSecret={}.", tenantId, clientId, clientSecret);
                 tokenSource = new TokenSourceImpl(tenantId, clientId, clientSecret);
             }
 
@@ -81,8 +77,8 @@ public class DeviceCodeDriver implements Driver {
             sqlServerDataSource.setDatabaseName(validateInput("database", info));
 
             sqlServerDataSource.setEncrypt(true);
-            sqlServerDataSource.setTrustServerCertificate(true);
-            sqlServerDataSource.setHostNameInCertificate(validateInput("hostnameInCertificate", info));
+            sqlServerDataSource.setTrustServerCertificate(false);
+            sqlServerDataSource.setHostNameInCertificate(validateInput("hostNameInCertificate", info));
         }
 
         return sqlServerDataSource.getConnection();
