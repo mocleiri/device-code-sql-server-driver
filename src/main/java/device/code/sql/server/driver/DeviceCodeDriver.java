@@ -54,11 +54,22 @@ public class DeviceCodeDriver implements Driver {
 
         if (tokenSource == null) {
 
+//            String propertiesFileName = validateInput("propertiesFile", info);
+
+//            File propertiesFile = new File(propertiesFileName);
+//            tenantId=
+//                    clientId=
+//                            database=
+//                                    server=
+//                                            hostNameInCertificate=
+//                                                    pathToChrome=
+//                                                            clientSecret=
+
             String tenantId = validateInput("tenantId", info);
             String clientId = validateInput("clientId", info);
             String clientSecret = validateInput("clientSecret", info);
 
-            if (clientSecret == null) {
+            if (clientSecret == null || clientSecret.equals("missing clientSecret")) {
                 // login as developer
                 String pathToChrome = validateInput("pathToChrome", info);
 
