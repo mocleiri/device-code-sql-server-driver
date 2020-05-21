@@ -82,7 +82,13 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
                     String command = "\""+pathToChrome+"\" --app file:///" + landingPage.getAbsolutePath();
 
                     log.info("chrome command = '"+command+"'");
-                    Process p = Runtime.getRuntime().exec(command);
+
+                    try {
+                        Process p = Runtime.getRuntime().exec(command);
+                    }
+                    catch (Exception e) {
+                        log.error("failed to open chrome", e);
+                    }
 
                 } catch (FileNotFoundException e) {
                     log.error("file not found", e);
