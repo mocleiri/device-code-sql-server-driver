@@ -41,7 +41,21 @@ Change connection type to **URL Only**.  This code doesn't use the url in any wa
 
 ## Device Code Flow Settings
 
+The **hostNameInCertificate** as given here is incorrect.  Note the uppercase **N** in hostName.
+
+ Name | Value 
+ --- | ---
+ tenantId | The tenantId of the Active Directory Tenant where the app registration is registered.
+ clientId | The clientId of the app registration
+ database | The name of the database
+ server | The name of the server
+ hostNameInCertificate | hostname to validate in the certificate.
+ pathToChrome | Path to chrome.exe
+ clientSecret | If specified confidential client flow is used.
+ propertiesFile | Absolute path to properties file to define the above properties.  Any entry here will override this properties file.
+
 ![](images/intellij-data-source-advanced.png)
+
 
 # Example Login Flow
 
@@ -51,3 +65,23 @@ Change connection type to **URL Only**.  This code doesn't use the url in any wa
 I'm not an SQL Server expert and so my test user doesn't have the correct rights in SQL server
 But you can see from the video how it works and that you are able to connect as the user
 to the database.
+
+# Preconfiguring using a properties file
+
+DB-X-preconfigured.properties:
+
+``
+tenantId=
+clientId=
+database=
+server=
+hostNameInCertificate=
+pathToChrome=
+clientSecret=
+``
+
+
+
+# Debugging
+
+A log file **device-code-sql-server-driver.log** is emitted in the users home directory.

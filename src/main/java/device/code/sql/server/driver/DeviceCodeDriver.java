@@ -19,8 +19,12 @@ package device.code.sql.server.driver;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class DeviceCodeDriver implements Driver {
@@ -34,13 +38,17 @@ public class DeviceCodeDriver implements Driver {
      Typically token expiry is 1 hour.
 
      */
-    private static TokenRefreshingSQLServerConnectionPoolDataSource sqlServerDataSource = null;
+    private TokenRefreshingSQLServerConnectionPoolDataSource sqlServerDataSource = null;
 
-    private static TokenSource tokenSource = null;
+    private TokenSource tokenSource = null;
 
-    private String validateInput(String key, Properties info) {
+    private String validateInput(String key, Properties defaultProperties, Properties info) {
 
-        String value = info.getProperty(key, "missing " + key);
+        String value = info.getProperty(key);
+
+        if (value == null || value.trim().length() == 0) {
+            value = defaultProperties.getProperty(key, "missing " + key);
+        }
 
         String trimmedValue = value.trim();
 
@@ -54,24 +62,28 @@ public class DeviceCodeDriver implements Driver {
 
         if (tokenSource == null) {
 
-//            String propertiesFileName = validateInput("propertiesFile", info);
+            Properties defaultProperties = new Properties();
 
-//            File propertiesFile = new File(propertiesFileName);
-//            tenantId=
-//                    clientId=
-//                            database=
-//                                    server=
-//                                            hostNameInCertificate=
-//                                                    pathToChrome=
-//                                                            clientSecret=
+            String propertiesFileName = validateInput("propertiesFile", defaultProperties, info);
 
-            String tenantId = validateInput("tenantId", info);
-            String clientId = validateInput("clientId", info);
-            String clientSecret = validateInput("clientSecret", info);
+            if (propertiesFileName.equalsIgnoreCase("missing propertiesFile")) {
+                // check for the detault location user.home / device-code-sql-server-driver.properties
+
+                File defaultConfigurationFile = new File(new File(System.getProperty("user.home")), "device-code-sql-server-driver.properties");
+
+                loadProperties(defaultProperties, defaultConfigurationFile);
+            }
+            else {
+                loadProperties(defaultProperties, new File(propertiesFileName));
+            }
+
+            String tenantId = validateInput("tenantId", defaultProperties, info);
+            String clientId = validateInput("clientId", defaultProperties,  info);
+            String clientSecret = validateInput("clientSecret", defaultProperties,  info);
 
             if (clientSecret == null || clientSecret.equals("missing clientSecret")) {
                 // login as developer
-                String pathToChrome = validateInput("pathToChrome", info);
+                String pathToChrome = validateInput("pathToChrome", defaultProperties,  info);
 
                 log.info("login as developer: tenantId={}, clientId={}, pathToChrome={}.", tenantId, clientId, pathToChrome);
                 tokenSource = new DeveloperTokenSourceImpl(tenantId, clientId, pathToChrome);
@@ -84,15 +96,41 @@ public class DeviceCodeDriver implements Driver {
 
             sqlServerDataSource = new TokenRefreshingSQLServerConnectionPoolDataSource(tokenSource);
 
-            sqlServerDataSource.setServerName(validateInput("server", info));
-            sqlServerDataSource.setDatabaseName(validateInput("database", info));
+            sqlServerDataSource.setServerName(validateInput("server", defaultProperties,  info));
+            sqlServerDataSource.setDatabaseName(validateInput("database", defaultProperties,  info));
 
             sqlServerDataSource.setEncrypt(true);
             sqlServerDataSource.setTrustServerCertificate(false);
-            sqlServerDataSource.setHostNameInCertificate(validateInput("hostNameInCertificate", info));
+            sqlServerDataSource.setHostNameInCertificate(validateInput("hostNameInCertificate", defaultProperties,  info));
         }
 
         return sqlServerDataSource.getConnection();
+    }
+
+    private void loadProperties(Properties defaultProperties, File configurationFile) {
+
+        if (configurationFile.exists()) {
+
+            try (FileInputStream fos = new FileInputStream(configurationFile)) {
+                defaultProperties.load(fos);
+            } catch (IOException e) {
+                log.error("failed to read configuration file: " + configurationFile, e);
+            }
+
+            Set<Map.Entry<Object, Object>> entrySet = defaultProperties.entrySet();
+
+            log.info("loaded file: " + configurationFile + ", with " + entrySet.size() + " entries.");
+
+            for (Map.Entry<Object, Object>entry : entrySet) {
+
+                log.info(entry.getKey() + " = " + entry.getValue());
+
+            }
+
+        }
+        else {
+            log.warn(configurationFile + " does not exist.");
+        }
     }
 
     @Override
