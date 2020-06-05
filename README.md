@@ -31,12 +31,13 @@ However, its also possible to use the confidential client flow to login as the a
 
 # Intellij Custom Driver Configuration
 
-Build this project then point intellij at the location of the shadow.jar
+Build this project (./gradlew clean build shadowJar) then point intellij at the location of the shadow.jar.
+Change the driver class to **device.code.sql.server.driver.DeviceCodeDriver**
 ![](images/intellij-driver-configuration.png)
 
 # Intellij Custom Datasource Configuration
  
-Change connection type to **URL Only**.  This code doesn't use the url in any way.  Everything comes in via options in the **Advanced Tabs**
+Change connection type to **URL Only**.  This code doesn't use the url in any way.  Everything comes in via options in the **Advanced Tabs**.  Once configured pressing the **Test** button will validate the connection.
 ![](images/intellij-data-source-general.png)
 
 ## Device Code Flow Settings
@@ -70,7 +71,7 @@ to the database.
 
 DB-X-preconfigured.properties:
 
-``
+```
 tenantId=
 clientId=
 database=
@@ -78,7 +79,7 @@ server=
 hostNameInCertificate=
 pathToChrome=
 clientSecret=
-``
+```
 
 
 
