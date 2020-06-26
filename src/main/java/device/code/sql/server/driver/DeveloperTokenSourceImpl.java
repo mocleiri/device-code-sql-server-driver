@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.aad.msal4j.DeviceCode;
 import com.microsoft.aad.msal4j.DeviceCodeFlowParameters;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
+import com.microsoft.aad.msal4j.InteractiveRequestParameters;
 import com.microsoft.aad.msal4j.PublicClientApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -40,12 +42,10 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
     private static final Logger log = LoggerFactory.getLogger(DeveloperTokenSourceImpl.class);
 
     private final String clientId;
-    private final String pathToChrome;
 
-    public DeveloperTokenSourceImpl(String tenantId, String clientId, String pathToChrome) {
+    public DeveloperTokenSourceImpl(String tenantId, String clientId) {
         super(tenantId);
         this.clientId = clientId;
-        this.pathToChrome = pathToChrome;
         acquireToken();
     }
 
@@ -54,69 +54,20 @@ public class DeveloperTokenSourceImpl extends AbstractTokenSourceImpl {
 
         try {
 
-
             PublicClientApplication app = PublicClientApplication.builder(clientId)
                     .authority(AUTHORITY)
                     .build();
 
-            Consumer<DeviceCode> deviceCodeConsumer = (DeviceCode deviceCode) -> {
-
-                File landingPage = new File(new File(System.getProperty("user.home")), "device-code.html");
-
-                try {
-                    PrintWriter pw = new PrintWriter(landingPage);
-
-                    pw.println("<html><body>");
-
-                    pw.println("Please login here: <a href=\""
-                            + deviceCode.verificationUri()
-                            + "\">"
-                            + deviceCode.verificationUri()
-                            + "</a> And specify this code: "
-                            + deviceCode.userCode());
-
-                    pw.println("</body></html>");
-
-                    pw.close();
-
-                    String command = "\""+pathToChrome+"\" --app file:///" + landingPage.getAbsolutePath();
-
-                    log.info("chrome command = '"+command+"'");
-
-                    try {
-                        Process p = Runtime.getRuntime().exec(command);
-                    }
-                    catch (Exception e) {
-                        log.error("failed to open chrome", e);
-                    }
-
-                } catch (FileNotFoundException e) {
-                    log.error("file not found", e);
-                } catch (IOException e) {
-                    log.error("ioException", e);
-                }
+            InteractiveRequestParameters parameters = InteractiveRequestParameters
+                    .builder(new URI("http://localhost"))
+                    .scopes(SCOPE)
+                    .build();
 
 
-            };
+            super.token = app.acquireToken(parameters).join();
 
-            CompletableFuture<IAuthenticationResult> future = app.acquireToken(
-                    DeviceCodeFlowParameters.builder(SCOPE, deviceCodeConsumer).build());
-
-
-            future.handle((res, ex) -> {
-                if (ex != null) {
-                    log.info("message - " + ex.getMessage());
-                    return "Unknown!";
-                }
-
-                log.info(printJWTToken("Access Token", res.accessToken()));
-
-                log.info(printJWTToken("ID Token", res.idToken()));
-
-                return res;
-            });
-
-            super.token = future.join();
+            if (log.isDebugEnabled())
+                printJWTToken("Access", super.token.accessToken());
 
         }
         catch (Exception e) {

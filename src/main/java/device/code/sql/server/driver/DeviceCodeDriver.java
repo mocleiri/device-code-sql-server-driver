@@ -83,10 +83,8 @@ public class DeviceCodeDriver implements Driver {
 
             if (clientSecret == null || clientSecret.equals("missing clientSecret")) {
                 // login as developer
-                String pathToChrome = validateInput("pathToChrome", defaultProperties,  info);
-
-                log.info("login as developer: tenantId={}, clientId={}, pathToChrome={}.", tenantId, clientId, pathToChrome);
-                tokenSource = new DeveloperTokenSourceImpl(tenantId, clientId, pathToChrome);
+                log.info("login as developer: tenantId={}, clientId={}.", tenantId, clientId);
+                tokenSource = new DeveloperTokenSourceImpl(tenantId, clientId);
             }
             else {
                 // login as app registration service principal
