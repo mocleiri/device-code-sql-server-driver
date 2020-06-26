@@ -29,6 +29,8 @@ However, its also possible to use the confidential client flow to login as the a
 ## Device Code Flow
 ![images/app-registration-user-impersonation.png](images/app-registration-device-code-flow.png)
 
+A redirect url of http://localhost needs to be added and selected as well.
+
 # Intellij Custom Driver Configuration
 
 Build this project (./gradlew clean build shadowJar) then point intellij at the location of the shadow.jar.
@@ -51,7 +53,6 @@ The **hostNameInCertificate** as given here is incorrect.  Note the uppercase **
  database | The name of the database
  server | The name of the server
  hostNameInCertificate | hostname to validate in the certificate.
- pathToChrome | Path to chrome.exe
  clientSecret | If specified confidential client flow is used.
  propertiesFile | Absolute path to properties file to define the above properties.  Any entry here will override this properties file.
 
@@ -77,7 +78,6 @@ clientId=
 database=
 server=
 hostNameInCertificate=
-pathToChrome=
 clientSecret=
 ```
 
