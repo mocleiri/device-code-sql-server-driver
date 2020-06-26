@@ -58,6 +58,19 @@ The **hostNameInCertificate** as given here is incorrect.  Note the uppercase **
 
 ![](images/intellij-data-source-advanced.png)
 
+## Device Code Flow Settings File
+
+I've found passing the values through the advanced tab quite unreliable.  The best way seems to be to define a properties file and then
+have a single **propertiesFile** entry they points to the absolute path of the properties file.
+
+The code is written so that you can override any setting in the properties file using the advanced tab.
+
+![](images/datasource-advanced-properties.png)
+
+The configuration can be tested on the Datasource **General** tab by pressing the **Test Connection** button..
+
+If it works then you will see something like this.  If not check the logfile to see what failed.
+![](images/test-db-connection.png)
 
 # Example Login Flow
 
@@ -80,6 +93,10 @@ server=
 hostNameInCertificate=
 clientSecret=
 ```
+
+If the clientSecret is provided then the client confidential token acquisition method will be used.
+
+If the clientSecret is absent then the device code flow will be used to acquire a token in the name of the user that logs in instead of the app registration identity itself.
 
 
 
